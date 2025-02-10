@@ -1,4 +1,4 @@
-# This is a containerized functioning Authorization Server Written in Python
+# This is a containerized Authorization Server Written in Python
 
 ## Client Configuration and Management
 
