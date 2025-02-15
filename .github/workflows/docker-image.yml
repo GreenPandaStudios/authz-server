@@ -19,10 +19,10 @@ jobs:
 
     - name: Build the Docker Image
       run: |
-        docker build . --file Dockerfile --tag GreenPandaStudios/authz-server:latest
-        docker tag GreenPandaStudios/authz-server:latest GreenPandaStudios/authz-server:${{ github.sha }}
+        docker build . --file Dockerfile --tag greenpandastudios/authz-server:latest
+        docker tag greenpandastudios/authz-server:latest greenpandastudios/authz-server:${{ github.sha }}
 
     - name: Push Image to Docker Hub
       run: |
-        docker push GreenPandaStudios/authz-server:latest
-        docker push GreenPandaStudios/authz-server:${{ github.sha }}
+        docker push greenpandastudios/authz-server:latest
+        docker push greenpandastudios/authz-server:${{ github.sha }}
