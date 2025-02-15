@@ -19,8 +19,12 @@ jobs:
 
     - name: Build the Docker Image
       run: |
-        docker build . --file Dockerfile --tag greenpandastudios/authz-server:latest
-        docker tag greenpandastudios/authz-server:latest greenpandastudios/authz-server:${{ github.sha }}
+        docker buildx create --use  # Ensures multi-arch support is enabled to run on Raspberry Pi
+        docker buildx build --platform linux/arm64,linux/amd64 \
+        -t greenpandastudios/authz-server:latest \
+        -t greenpandastudios/authz-server:${{ github.sha }} \
+        --push .
+
 
     - name: Push Image to Docker Hub
       run: |
