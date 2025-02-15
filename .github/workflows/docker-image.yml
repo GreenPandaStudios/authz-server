@@ -17,16 +17,10 @@ jobs:
     - name: Log in to Docker Hub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Build the Docker Image
+    - name: Build and Push the Docker Image
       run: |
         docker buildx create --use  # Ensures multi-arch support is enabled to run on Raspberry Pi
         docker buildx build --platform linux/arm64,linux/amd64 \
         -t greenpandastudios/authz-server:latest \
         -t greenpandastudios/authz-server:${{ github.sha }} \
         --push .
-
-
-    - name: Push Image to Docker Hub
-      run: |
-        docker push greenpandastudios/authz-server:latest
-        docker push greenpandastudios/authz-server:${{ github.sha }}
