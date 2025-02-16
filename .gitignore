@@ -133,3 +133,21 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go vendor directory
+vendor/
+
+# Go test binaries
+*.test
+
+# Go dependency management
+Gopkg.lock
+Gopkg.toml
+go.sum

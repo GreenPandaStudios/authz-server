@@ -1,5 +1,5 @@
-# Use the official Python image from the Docker Hub
-FROM python:3.10
+# Use the official Golang image from the Docker Hub
+FROM golang:1.21
 
 # Set the working directory in the container
 WORKDIR /app
@@ -7,26 +7,28 @@ WORKDIR /app
 # Copy the rest of the application code into the container
 COPY . .
 
+# Create new directory for keys
 RUN rm -rf ./.keys
 RUN mkdir -p ./.keys
+
+# Install Go dependencies before switching user
+RUN go mod tidy
+
+
 # Create a non-root user and switch to it
 RUN useradd -m appuser
-RUN chown -R appuser:appuser ./.keys && chmod -R 700 ./.keys
+RUN chown -R appuser:appuser . && chmod -R 700 .
 USER appuser
 
-# Install any dependencies specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-
+# Build the Go application
+RUN go build -o main .
 
 # Set environment variable for the port
 ENV PORT 8080
-ENV DOMAIN "localhost"
-ENV PROTOCOL "http"
 ENV CLIENTS "client1|MyClientSecret1|http://localhost|client2|MyClientSecret2|http://localhost"
 
-
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE ${PORT}
+
 # Command to run the application
-CMD ["python3", "http_server.py"]
+CMD ["./main"]
