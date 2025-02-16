@@ -1,33 +1,48 @@
-# Use the official Golang image from the Docker Hub
-FROM golang:1.21
+# Use the official Golang image
+FROM golang:1.21 AS builder
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the rest of the application code into the container
+# Copy application files
 COPY . .
 
-# Create new directory for keys
-RUN rm -rf ./.keys
-RUN mkdir -p ./.keys
+# Remove and recreate keys directory
+RUN rm -rf ./.keys && mkdir -p ./.keys
 
-# Install Go dependencies before switching user
+# Set correct permissions for Go module cache before switching users
+RUN chmod -R 777 /go/pkg/mod
+
+# Disable CGO to prevent issues with cross-compilation
+ENV CGO_ENABLED=0
+
+# Install Go dependencies
 RUN go mod tidy
-
-
-# Create a non-root user and switch to it
-RUN useradd -m appuser
-RUN chown -R appuser:appuser . && chmod -R 700 .
-USER appuser
 
 # Build the Go application
 RUN go build -o main .
 
-# Set environment variable for the port
+# Create a non-root user
+RUN useradd -m appuser
+RUN chown -R appuser:appuser /app
+
+# Use a minimal runtime image for final execution
+FROM debian:bullseye-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy the compiled binary from the builder stage
+COPY --from=builder /app/main .
+
+# Use the non-root user
+USER appuser
+
+# Set environment variables
 ENV PORT 8080
 ENV CLIENTS "client1|MyClientSecret1|http://localhost|client2|MyClientSecret2|http://localhost"
 
-# Expose the port the app runs on
+# Expose the application port
 EXPOSE ${PORT}
 
 # Command to run the application
