@@ -1,4 +1,4 @@
-# Use the official Golang image
+# Use the official Golang image for building the app
 FROM golang:1.21 AS builder
 
 # Set the working directory
@@ -19,12 +19,17 @@ RUN go mod tidy
 # Build the Go application
 RUN go build -o main .
 
-# Use a minimal runtime image for final execution
-FROM debian:bullseye-slim
-
-# Create a non-root user
+# Create a non-root user in the builder stage
 RUN useradd -m appuser
-RUN chown -R appuser:appuser /app
+
+# Use a minimal runtime image for final execution
+FROM debian:bullseye-slim AS runtime
+
+# Create the same non-root user in the runtime image
+RUN useradd -m appuser
+
+# Ensure the /app directory exists and set correct ownership
+RUN mkdir -p /app && chown -R appuser:appuser /app
 
 # Set working directory
 WORKDIR /app
