@@ -19,12 +19,12 @@ RUN go mod tidy
 # Build the Go application
 RUN go build -o main .
 
+# Use a minimal runtime image for final execution
+FROM debian:bullseye-slim
+
 # Create a non-root user
 RUN useradd -m appuser
 RUN chown -R appuser:appuser /app
-
-# Use a minimal runtime image for final execution
-FROM debian:bullseye-slim
 
 # Set working directory
 WORKDIR /app
