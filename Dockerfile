@@ -10,9 +10,6 @@ COPY . .
 # Remove and recreate keys directory
 RUN rm -rf ./.keys && mkdir -p ./.keys
 
-# Set correct permissions for Go module cache before switching users
-RUN chmod -R 777 /go/pkg/mod
-
 # Disable CGO to prevent issues with cross-compilation
 ENV CGO_ENABLED=0
 
@@ -39,8 +36,8 @@ COPY --from=builder /app/main .
 USER appuser
 
 # Set environment variables
-ENV PORT 8080
-ENV CLIENTS "client1|MyClientSecret1|http://localhost|client2|MyClientSecret2|http://localhost"
+ENV PORT=8080
+ENV CLIENTS="client1|MyClientSecret1|http://localhost|client2|MyClientSecret2|http://localhost"
 
 # Expose the application port
 EXPOSE ${PORT}
