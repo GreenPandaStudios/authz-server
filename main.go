@@ -57,6 +57,7 @@ func (h *RootHandler) handleGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
     err := os.RemoveAll("./.keys")
     if err != nil {
         log.Printf("Error deleting .keys file: %v", err)

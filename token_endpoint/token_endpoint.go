@@ -43,7 +43,7 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
     case "authorization_code":
         handleAuthorizationCode(w, requestBody, requestHeaders)
     case "client_credentials":
-        handleClientCredentials(w, requestBody, requestHeaders)
+        handleClientCredentials(w, requestHeaders)
     case "refresh_token":
         handleRefreshToken(w, requestBody, requestHeaders)
     default:
@@ -56,7 +56,7 @@ func handleAuthorizationCode(w http.ResponseWriter, _ map[string]interface{}, _ 
     http.Error(w, `{"error": "unsupported_grant_type"}`, http.StatusBadRequest)
 }
 
-func handleClientCredentials(w http.ResponseWriter, requestBody map[string]interface{}, requestHeaders http.Header) {
+func handleClientCredentials(w http.ResponseWriter, requestHeaders http.Header) {
 
     authHeader := requestHeaders.Get("Authorization")
     if authHeader == "" {
