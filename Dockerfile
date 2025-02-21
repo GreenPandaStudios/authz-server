@@ -1,5 +1,5 @@
 # Use the official Golang image for building the app
-FROM golang:1.21 AS builder
+FROM golang:1.22 AS builder
 
 # Set the working directory
 WORKDIR /app
@@ -24,6 +24,7 @@ RUN useradd -m appuser
 
 # Use a minimal runtime image for final execution
 FROM debian:bullseye-slim AS runtime
+RUN apt-get update && apt-get install -y ca-certificates
 
 # Create the same non-root user in the runtime image
 RUN useradd -m appuser
@@ -34,8 +35,9 @@ RUN mkdir -p /app && chown -R appuser:appuser /app
 # Set working directory
 WORKDIR /app
 
-# Copy the compiled binary from the builder stage
+# Copy the compiled binary and service account file from the builder stage
 COPY --from=builder /app/main .
+COPY --from=builder /app/service-account.json .
 
 # Use the non-root user
 USER appuser
@@ -43,7 +45,6 @@ USER appuser
 # Set environment variables
 ENV PORT=8080
 ENV CLIENTS="client1|MyClientSecret1|http://localhost|client2|MyClientSecret2|http://localhost"
-
 # Expose the application port
 EXPOSE ${PORT}
 

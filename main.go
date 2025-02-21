@@ -67,7 +67,10 @@ func main() {
 
 
     fmt.Println("Generating new keys...")
-    key_generator.GenerateNewKeys()
+    _,_,err = key_generator.GenerateNewKeys()
+    if err != nil {
+        log.Fatalf("Error generating new keys: %v", err)
+    }
 
     fmt.Println("Creating clients...")
     client.CreateClientsEnvFile()

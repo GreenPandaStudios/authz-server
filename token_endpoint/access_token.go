@@ -1,8 +1,8 @@
 package token_endpoint
 
 import (
+	"authz-server/key_generator"
 	"authz-server/well_known"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -34,12 +34,13 @@ func issueNewAccessToken(clientID string, expiresIn int, scopes map[string]inter
         "token_type": "refresh_token",
     }
 
-    privateKeyData, err := os.ReadFile(".keys/private_key.pem")
+    keys,  err := key_generator.GetKeys()
     if err != nil {
         return "", "", err
     }
 
-    privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyData)
+    //Use the first key pair to sign the tokens
+    privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(keys[0].PrivateKey)
     if err != nil {
         return "", "", err
     }

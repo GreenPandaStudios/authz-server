@@ -1,13 +1,14 @@
 package jwks_endpoint
 
 import (
+	"authz-server/key_generator"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"net/http"
-	"os"
 )
 
 type JWK struct {
@@ -18,41 +19,51 @@ type JWK struct {
 }
 
 func HandleJWKSEndpoint(w http.ResponseWriter, r *http.Request) {
-    pemData, err := os.ReadFile(".keys/public_key.pem")
+    keys, err := key_generator.GetKeys()
     if err != nil {
         http.Error(w, "Failed to read public key file", http.StatusInternalServerError)
         return
     }
 
+    var jwks []JWK
+    for _, key := range keys {
+        jwk, err := getJwk(key.PublicKey)
+        if err != nil {
+            http.Error(w, "Failed to parse public key", http.StatusInternalServerError)
+            return
+        }
+        jwks = append(jwks, jwk)
+    }
+
+    pubKeys := map[string][]JWK{"keys": jwks}
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(pubKeys)
+}
+
+
+func getJwk(pemData []byte) (JWK, error) {
     block, _ := pem.Decode(pemData)
     if block == nil || block.Type != "PUBLIC KEY" {
-        http.Error(w, "Failed to decode PEM block", http.StatusInternalServerError)
-        return
+        return JWK{}, errors.New("Failed to parse public key")
     }
 
     pub, err := x509.ParsePKIXPublicKey(block.Bytes)
     if err != nil {
-        http.Error(w, "Failed to parse public key", http.StatusInternalServerError)
-        return
+        return JWK{}, err
     }
 
     rsaPub, ok := pub.(*rsa.PublicKey)
     if !ok {
-        http.Error(w, "Not an RSA public key", http.StatusInternalServerError)
-        return
+        return JWK{}, errors.New("Failed to parse public key")
     }
 
     n := base64.RawURLEncoding.EncodeToString(rsaPub.N.Bytes())
     e := base64.RawURLEncoding.EncodeToString([]byte{1, 0, 1}) // 65537 in big-endian
 
-    jwk := JWK{
+    return JWK{
         Kty: "RSA",
         E:   e,
         N:   n,
         Alg: "RS256",
-    }
-
-    keys := map[string][]JWK{"keys": {jwk}}
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(keys)
+    },nil
 }
